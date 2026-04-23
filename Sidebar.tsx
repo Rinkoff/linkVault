@@ -1,130 +1,75 @@
 "use client";
 
-import React from "react";
-import { 
-  LayoutGrid, 
-  Instagram, 
-  Github, 
-  Plus, 
-  LogOut,
-  Settings,
-  Bookmark
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { Bookmark, Loader2 } from "lucide-react";
 
-interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  onAddClick: () => void;
-}
+const LoginPage = () => {
+  const { user, loading, loginWithGoogle } = useAuth();
+  const router = useRouter();
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onAddClick }) => {
-  const { logout, user } = useAuth();
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
 
-  const menuItems = [
-    { id: "general", label: "General", icon: LayoutGrid },
-    { id: "instagram", label: "Instagram", icon: Instagram },
-    { id: "github", label: "GitHub", icon: Github },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="animate-spin text-gray-400" size={32} />
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-col h-screen w-64 bg-[#F7F7F5] border-r border-[#EDEDEB] p-4 text-[#37352F]">
-        <div className="flex items-center gap-2 px-2 py-4 mb-6">
-          <div className="bg-[#37352F] text-white p-1.5 rounded-lg">
-            <Bookmark size={20} />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F7F5] p-4">
+      <div className="w-full max-w-md space-y-8 text-center">
+        <div className="flex flex-col items-center">
+          <div className="bg-[#37352F] text-white p-4 rounded-2xl shadow-xl mb-6 transform hover:rotate-3 transition-transform">
+            <Bookmark size={48} />
           </div>
-          <h1 className="font-bold text-lg tracking-tight">LinkVault</h1>
+          <h1 className="text-4xl font-extrabold text-[#37352F] tracking-tight mb-2">
+            LinkVault
+          </h1>
+          <p className="text-gray-500 text-lg">
+            Your personal, minimalist bookmark manager.
+          </p>
         </div>
 
-        <div className="flex-1 space-y-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={cn(
-                "flex items-center gap-3 w-full px-3 py-2 rounded-md transition-colors text-sm font-medium",
-                activeTab === item.id
-                  ? "bg-[#EBEBE9] text-[#37352F]"
-                  : "hover:bg-[#EBEBE9] text-[#37352F]/70"
-              )}
-            >
-              <item.icon size={18} />
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-auto space-y-4 pt-4 border-t border-[#EDEDEB]">
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+          <p className="text-sm text-gray-400 font-medium">
+            Sign in to start organizing your web.
+          </p>
+          
           <button
-            onClick={onAddClick}
-            className="flex items-center justify-center gap-2 w-full bg-[#37352F] text-white px-3 py-2 rounded-md hover:bg-[#37352F]/90 transition-all shadow-sm"
+            onClick={loginWithGoogle}
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 px-4 rounded-2xl text-[#37352F] font-bold hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.98]"
           >
-            <Plus size={18} />
-            <span className="text-sm font-medium">Add Link</span>
+            <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+              alt="Google" 
+              className="w-5 h-5"
+            />
+            Continue with Google
           </button>
 
-          <div className="flex items-center gap-3 px-3 py-2">
-            {user?.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt={user.displayName || "User"}
-                className="w-8 h-8 rounded-full border border-[#EDEDEB]"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-[#37352F]/10 flex items-center justify-center text-xs font-bold">
-                {user?.displayName?.charAt(0) || "U"}
-              </div>
-            )}
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-semibold truncate">
-                {user?.displayName || "Guest User"}
-              </p>
-            </div>
-            <button 
-              onClick={logout}
-              className="p-1.5 hover:bg-[#EBEBE9] rounded-md text-[#37352F]/60 transition-colors"
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
+          <p className="text-[10px] text-gray-300 px-8 leading-relaxed">
+            By signing in, you agree to organize your links efficiently and stay focused on what matters.
+          </p>
+        </div>
+
+        <div className="pt-8">
+          <div className="flex justify-center gap-8 text-xs text-gray-400 font-medium">
+            <span>Secure</span>
+            <span>Minimalist</span>
+            <span>Fast</span>
           </div>
         </div>
       </div>
-
-      {/* Mobile Bottom Nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-[#EDEDEB] px-6 py-3 flex items-center justify-between z-50">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={cn(
-              "flex flex-col items-center gap-1 transition-colors",
-              activeTab === item.id ? "text-[#37352F]" : "text-[#37352F]/40"
-            )}
-          >
-            <item.icon size={20} />
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </button>
-        ))}
-        <button
-          onClick={onAddClick}
-          className="bg-[#37352F] text-white p-3 rounded-full shadow-lg transform -translate-y-6"
-        >
-          <Plus size={24} />
-        </button>
-        <button 
-          onClick={logout}
-          className="flex flex-col items-center gap-1 text-[#37352F]/40"
-        >
-          <LogOut size={20} />
-          <span className="text-[10px] font-medium">Exit</span>
-        </button>
-      </div>
-    </>
+    </div>
   );
 };
 
-export default Sidebar;
+export default LoginPage;
